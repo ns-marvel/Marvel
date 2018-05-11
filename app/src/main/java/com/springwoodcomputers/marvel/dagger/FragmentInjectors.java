@@ -1,5 +1,6 @@
 package com.springwoodcomputers.marvel.dagger;
 
+import com.springwoodcomputers.marvel.ChildFragment;
 import com.springwoodcomputers.marvel.MainFragment;
 
 import dagger.Module;
@@ -11,4 +12,7 @@ abstract class FragmentInjectors {
 
     @ContributesAndroidInjector
     abstract MainFragment mainFragment();
+
+    @ContributesAndroidInjector
+    abstract ChildFragment childFragment();
 }
