@@ -4,10 +4,10 @@ import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
 
 import com.springwoodcomputers.marvel.database.dao.SearchDao;
-import com.springwoodcomputers.marvel.database.entity.Search;
+import com.springwoodcomputers.marvel.database.entity.CharacterSearch;
 
 @Database(
-        entities = {Search.class},
+        entities = {CharacterSearch.class},
         version = 1)
 public abstract class MarvelDatabase extends RoomDatabase {
 

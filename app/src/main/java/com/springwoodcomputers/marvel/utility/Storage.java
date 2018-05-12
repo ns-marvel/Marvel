@@ -1,4 +1,4 @@
-package com.springwoodcomputers.marvel;
+package com.springwoodcomputers.marvel.utility;
 
 import android.content.SharedPreferences;
 
