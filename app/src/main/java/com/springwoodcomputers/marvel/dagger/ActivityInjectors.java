@@ -1,6 +1,6 @@
 package com.springwoodcomputers.marvel.dagger;
 
-import com.springwoodcomputers.marvel.MainActivity;
+import com.springwoodcomputers.marvel.main.MainActivity;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;

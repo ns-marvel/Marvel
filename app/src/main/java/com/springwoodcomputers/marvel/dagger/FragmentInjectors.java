@@ -1,7 +1,7 @@
 package com.springwoodcomputers.marvel.dagger;
 
-import com.springwoodcomputers.marvel.ChildFragment;
-import com.springwoodcomputers.marvel.MainFragment;
+import com.springwoodcomputers.marvel.main.ChildFragment;
+import com.springwoodcomputers.marvel.main.MainFragment;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;

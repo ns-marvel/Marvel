@@ -1,10 +1,13 @@
-package com.springwoodcomputers.marvel;
+package com.springwoodcomputers.marvel.main;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
+import com.springwoodcomputers.marvel.R;
+import com.springwoodcomputers.marvel.api.MarvelService;
 import com.springwoodcomputers.marvel.dagger.ViewModelFactory;
 
 import javax.inject.Inject;
@@ -18,6 +21,9 @@ public class MainActivity extends DaggerAppCompatActivity {
     @Inject
     ViewModelFactory viewModelFactory;
 
+    @Inject
+    MarvelService marvelService;
+
     @BindView(R.id.main_container)
     FrameLayout mainContainer;
 
@@ -25,8 +31,12 @@ public class MainActivity extends DaggerAppCompatActivity {
     @BindView(R.id.child_container)
     FrameLayout childContainer;
 
+    @BindView(R.id.attribution_text)
+    TextView attributionTextview;
+
     private MainViewModel viewModel;
     private boolean isSinglePane;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +47,14 @@ public class MainActivity extends DaggerAppCompatActivity {
         setUpView(savedInstanceState);
 
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel.class);
+        viewModel.getAttributionText().observe(this, this::setAttributionText);
 
     }
+
+    private void setAttributionText(String newAttributionText) {
+        attributionTextview.setText(newAttributionText);
+    }
+
 
     private void setUpView(Bundle savedInstanceState) {
         isSinglePane = childContainer == null;
