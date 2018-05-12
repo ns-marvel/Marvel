@@ -3,8 +3,8 @@ package com.springwoodcomputers.marvel.dagger;
 import android.app.Application;
 
 import com.springwoodcomputers.marvel.BuildConfig;
-import com.springwoodcomputers.marvel.MarvelService;
 import com.springwoodcomputers.marvel.Storage;
+import com.springwoodcomputers.marvel.api.MarvelService;
 
 import java.security.MessageDigest;
 import java.util.Calendar;
