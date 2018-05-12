@@ -2,8 +2,10 @@ package com.springwoodcomputers.marvel.dagger;
 
 import android.app.Application;
 import android.arch.persistence.room.Room;
+import android.preference.PreferenceManager;
 
 import com.springwoodcomputers.marvel.MarvelApplication;
+import com.springwoodcomputers.marvel.Storage;
 import com.springwoodcomputers.marvel.database.MarvelDatabase;
 import com.springwoodcomputers.marvel.database.dao.SearchDao;
 
@@ -22,6 +24,12 @@ public abstract class AppModule {
     @Binds
     @Singleton
     public abstract Application application(MarvelApplication application);
+
+    @Singleton
+    @Provides
+    static Storage provideStorage(Application context) {
+        return new Storage(PreferenceManager.getDefaultSharedPreferences(context));
+    }
 
     @Singleton
     @Provides
