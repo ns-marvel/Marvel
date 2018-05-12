@@ -32,7 +32,7 @@ public class MainActivity extends DaggerAppCompatActivity {
     FrameLayout childContainer;
 
     @BindView(R.id.attribution_text)
-    TextView attributionTextview;
+    TextView attributionTextView;
 
     private MainViewModel viewModel;
     private boolean isSinglePane;
@@ -52,7 +52,7 @@ public class MainActivity extends DaggerAppCompatActivity {
     }
 
     private void setAttributionText(String newAttributionText) {
-        attributionTextview.setText(newAttributionText);
+        attributionTextView.setText(newAttributionText);
     }
 
 
