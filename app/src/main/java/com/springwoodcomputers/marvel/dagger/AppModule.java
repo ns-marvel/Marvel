@@ -5,9 +5,9 @@ import android.arch.persistence.room.Room;
 import android.preference.PreferenceManager;
 
 import com.springwoodcomputers.marvel.MarvelApplication;
-import com.springwoodcomputers.marvel.Storage;
 import com.springwoodcomputers.marvel.database.MarvelDatabase;
 import com.springwoodcomputers.marvel.database.dao.SearchDao;
+import com.springwoodcomputers.marvel.utility.Storage;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

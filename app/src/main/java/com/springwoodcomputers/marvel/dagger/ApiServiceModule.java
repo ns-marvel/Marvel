@@ -3,8 +3,8 @@ package com.springwoodcomputers.marvel.dagger;
 import android.app.Application;
 
 import com.springwoodcomputers.marvel.BuildConfig;
-import com.springwoodcomputers.marvel.Storage;
 import com.springwoodcomputers.marvel.api.MarvelService;
+import com.springwoodcomputers.marvel.utility.Storage;
 
 import java.security.MessageDigest;
 import java.util.Calendar;
@@ -23,10 +23,10 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static com.springwoodcomputers.marvel.Constants.API_KEY;
-import static com.springwoodcomputers.marvel.Constants.PRIVATE_KEY;
-import static com.springwoodcomputers.marvel.Constants.URL_MARVEL;
-import static com.springwoodcomputers.marvel.Storage.REQUEST_TIMESTAMP;
+import static com.springwoodcomputers.marvel.utility.Constants.API_KEY;
+import static com.springwoodcomputers.marvel.utility.Constants.PRIVATE_KEY;
+import static com.springwoodcomputers.marvel.utility.Constants.URL_MARVEL;
+import static com.springwoodcomputers.marvel.utility.Storage.REQUEST_TIMESTAMP;
 
 @Module
 class ApiServiceModule {
