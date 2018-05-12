@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "b66bca20ea57de1c3f8be3d4e6ffcd45",
+    "identityHash": "5f69f76e8a4fbf816c959c14db902ee2",
     "entities": [
       {
         "tableName": "search_history",
@@ -27,13 +27,22 @@
           ],
           "autoGenerate": true
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_search_history_SEARCH_STRING",
+            "unique": true,
+            "columnNames": [
+              "SEARCH_STRING"
+            ],
+            "createSql": "CREATE UNIQUE INDEX `index_search_history_SEARCH_STRING` ON `${TABLE_NAME}` (`SEARCH_STRING`)"
+          }
+        ],
         "foreignKeys": []
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"b66bca20ea57de1c3f8be3d4e6ffcd45\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"5f69f76e8a4fbf816c959c14db902ee2\")"
     ]
   }
 }
