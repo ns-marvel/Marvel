@@ -41,15 +41,17 @@ public class MarvelServiceManagerTest {
     private MarvelServiceManager manager;
 
     private String characterStartsWith = "Super";
+    private int limit = 20;
+    private int offset = 0;
     private CharacterDataWrapper characterDataWrapper = new CharacterDataWrapper();
 
     @Test
     public void searchSuccess_callsBackToOnSearchSucceeded() {
-        doReturn(mockCall).when(mockService).getCharactersStartingWith(characterStartsWith);
+        doReturn(mockCall).when(mockService).getCharactersStartingWith(characterStartsWith, limit, offset);
 
         manager.searchForCharacters(characterStartsWith, mockSearchForCharactersListener);
 
-        verify(mockService).getCharactersStartingWith(characterStartsWith);
+        verify(mockService).getCharactersStartingWith(characterStartsWith, limit, offset);
         verify(mockCall).enqueue(searchForCharactersCaptor.capture());
 
         searchForCharactersCaptor.getValue().onSuccess(characterDataWrapper);
@@ -59,11 +61,11 @@ public class MarvelServiceManagerTest {
 
     @Test
     public void searchFailure_callsBackToOnSearchFailed() {
-        doReturn(mockCall).when(mockService).getCharactersStartingWith(characterStartsWith);
+        doReturn(mockCall).when(mockService).getCharactersStartingWith(characterStartsWith, limit, offset);
 
         manager.searchForCharacters(characterStartsWith, mockSearchForCharactersListener);
 
-        verify(mockService).getCharactersStartingWith(characterStartsWith);
+        verify(mockService).getCharactersStartingWith(characterStartsWith, limit, offset);
         verify(mockCall).enqueue(searchForCharactersCaptor.capture());
 
         searchForCharactersCaptor.getValue().onError();

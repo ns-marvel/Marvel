@@ -14,7 +14,11 @@ public class MarvelServiceManager {
     }
 
     public void searchForCharacters(String nameBeginsWith, SearchForCharactersListener listener) {
-        service.getCharactersStartingWith(nameBeginsWith).enqueue(new BaseCallBack<CharacterDataWrapper>() {
+        searchForCharacters(nameBeginsWith, 20, 0, listener);
+    }
+
+    public void searchForCharacters(String nameBeginsWith, int limit, int offset, SearchForCharactersListener listener) {
+        service.getCharactersStartingWith(nameBeginsWith, limit, offset).enqueue(new BaseCallBack<CharacterDataWrapper>() {
             @Override
             void onSuccess(CharacterDataWrapper body) {
                 listener.onSearchSucceeded(body);

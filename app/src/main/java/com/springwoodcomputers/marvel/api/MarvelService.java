@@ -10,7 +10,9 @@ import retrofit2.http.Query;
 public interface MarvelService {
 
     @GET("characters")
-    Call<CharacterDataWrapper> getCharactersStartingWith(@Query("nameStartsWith") String startsWith);
+    Call<CharacterDataWrapper> getCharactersStartingWith(@Query("nameStartsWith") String startsWith,
+                                                         @Query("limit") int limit,
+                                                         @Query("offset") int offset);
 
     @GET("characters/{character_id}")
     Call<CharacterDataWrapper> getCharacterById(@Path("character_id") int characterId);
