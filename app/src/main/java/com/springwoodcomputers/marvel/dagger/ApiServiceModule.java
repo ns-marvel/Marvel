@@ -4,6 +4,11 @@ import android.app.Application;
 
 import com.springwoodcomputers.marvel.BuildConfig;
 import com.springwoodcomputers.marvel.MarvelService;
+import com.springwoodcomputers.marvel.Storage;
+
+import java.security.MessageDigest;
+import java.util.Calendar;
+import java.util.Locale;
 
 import javax.inject.Singleton;
 
@@ -19,28 +24,31 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.springwoodcomputers.marvel.Constants.API_KEY;
+import static com.springwoodcomputers.marvel.Constants.PRIVATE_KEY;
 import static com.springwoodcomputers.marvel.Constants.URL_MARVEL;
+import static com.springwoodcomputers.marvel.Storage.REQUEST_TIMESTAMP;
 
 @Module
 class ApiServiceModule {
 
     @Provides
     @Singleton
-    MarvelService provideMarvelService(Application context) {
+    MarvelService provideMarvelService(Application context, Storage storage) {
         return new Retrofit
                 .Builder()
                 .baseUrl(URL_MARVEL)
                 .addConverterFactory(GsonConverterFactory.create())
-                .client(getOkHttpClient(context))
+                .client(getOkHttpClient(context, storage))
                 .build()
                 .create(MarvelService.class);
     }
 
-    private OkHttpClient getOkHttpClient(Application context) {
+    private OkHttpClient getOkHttpClient(Application context, Storage storage) {
         return new OkHttpClient
                 .Builder()
                 .cache(getCache(context))
                 .addInterceptor(getApiKeyInterceptor())
+                .addInterceptor(getTsAndHashCodeInterceptor(storage))
                 .addInterceptor(getLoggingInterceptor())
                 .build();
     }
@@ -59,9 +67,45 @@ class ApiServiceModule {
         };
     }
 
+    private Interceptor getTsAndHashCodeInterceptor(Storage storage) {
+        final String timeStamp = getTimeStamp(storage);
+        return chain -> {
+            Request originalRequest = chain.request();
+
+            String stringToConvert = String.format(Locale.getDefault(), "%s%s%s", timeStamp, PRIVATE_KEY, API_KEY);
+            MessageDigest md;
+            try {
+                md = MessageDigest.getInstance("MD5");
+            } catch (Exception e) {
+                return chain.proceed(chain.request());
+            }
+            StringBuilder sb = new StringBuilder();
+            byte[] bytesToConvert = md.digest(stringToConvert.getBytes());
+            for (byte byteToConvert : bytesToConvert) {
+                sb.append(Integer.toHexString((byteToConvert & 0xFF) | 0x100), 1, 3);
+            }
+
+            HttpUrl.Builder builder = originalRequest.url().newBuilder();
+            builder.addEncodedQueryParameter("ts", timeStamp);
+            builder.addEncodedQueryParameter("hash", sb.toString());
+            HttpUrl httpUrl = builder.build();
+            Request updatedRequest = originalRequest.newBuilder().url(httpUrl).build();
+            return chain.proceed(updatedRequest);
+        };
+    }
+
+    private String getTimeStamp(Storage storage) {
+        String storedTimeStamp = storage.getString(REQUEST_TIMESTAMP);
+        if (storedTimeStamp == null) {
+            storedTimeStamp = Long.toString(Calendar.getInstance().getTimeInMillis());
+            storage.putString(REQUEST_TIMESTAMP, storedTimeStamp);
+        }
+        return storedTimeStamp;
+    }
+
     private Interceptor getLoggingInterceptor() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BODY : HttpLoggingInterceptor.Level.NONE);
+        loggingInterceptor.setLevel(BuildConfig.DEBUG ? HttpLoggingInterceptor.Level.BASIC : HttpLoggingInterceptor.Level.NONE);
         return loggingInterceptor;
     }
 }
