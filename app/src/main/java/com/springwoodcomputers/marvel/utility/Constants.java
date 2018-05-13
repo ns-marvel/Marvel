@@ -7,4 +7,5 @@ public class Constants {
     public static final String API_KEY = "9ce1fcd3475827401c07e69da6686015";
 
     public static final String URL_MARVEL = "https://gateway.marvel.com/v1/public/";
+    public static final int MAX_LIMIT_PERMITTED = 100;
 }
