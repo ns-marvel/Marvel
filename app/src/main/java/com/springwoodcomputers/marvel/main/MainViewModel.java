@@ -3,6 +3,7 @@ package com.springwoodcomputers.marvel.main;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.support.design.widget.Snackbar;
+import android.widget.Filter;
 
 import com.springwoodcomputers.marvel.R;
 import com.springwoodcomputers.marvel.api.MarvelServiceManager;
@@ -30,7 +31,8 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     @Inject
     SearchDao searchDao;
 
-//    private LiveData<List<CharacterSearch>> savedSearches;
+    @Getter
+    private MutableLiveData<List<CharacterSearch>> savedSearches = new MutableLiveData<>();
 
     @Getter
     private MutableLiveData<List<Character>> searchResults = new MutableLiveData<>();
@@ -41,13 +43,16 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     @Getter
     private MutableLiveData<MainViewState> mainViewState = new MutableLiveData<>();
 
+    @Getter
+    private MutableLiveData<Boolean> loadingInProgress = new MutableLiveData<>();
+
     @Inject
     MainViewModel() {
     }
 
-
-    public void searchForCharacter(CharacterSearch characterSearch) {
+    void searchForCharacter(CharacterSearch characterSearch) {
         searchResults.setValue(new ArrayList<>());
+        loadingInProgress.setValue(true);
         manager.searchForCharacters(characterSearch.getSearchString(), this);
         saveSearchInDatabase(characterSearch);
     }
@@ -55,7 +60,6 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     private void saveSearchInDatabase(CharacterSearch characterSearch) {
         executor.execute(() -> searchDao.insertCharacterSearch(characterSearch));
     }
-
 
     @Override
     public void onSearchSucceeded(CharacterDataWrapper characterDataWrapper) {
@@ -70,15 +74,36 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         if (newAttributionText != null && !newAttributionText.equals(attributionText.getValue())) {
             attributionText.setValue(newAttributionText);
         }
+        loadingInProgress.setValue(false);
     }
 
     @Override
     public void onSearchFailed() {
         mainViewState.setValue(new MainViewState(Snackbar.LENGTH_INDEFINITE, R.string.network_error, R.string.retry));
+        loadingInProgress.setValue(false);
     }
 
-    public void getMatchingSavedSearches(CharacterSearch characterSearch) {
+    @Getter
+    private Filter characterSearchFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            FilterResults filterResults = new FilterResults();
+            if (charSequence == null || charSequence.length() == 0) {
+                filterResults.values = new ArrayList<CharacterSearch>();
+                filterResults.count = 0;
+            } else {
+                filterResults.values = searchDao.getMatchingPreviousSearches(charSequence.toString());
+                filterResults.count = ((List) filterResults.values).size();
+            }
+            return filterResults;
+        }
 
-        searchDao.getMatchingPreviousSearches(characterSearch.getSearchString());
-    }
+        @SuppressWarnings("unchecked")
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            if (results != null) {
+                savedSearches.setValue((List<CharacterSearch>) results.values);
+            }
+        }
+    };
 }

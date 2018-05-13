@@ -3,7 +3,7 @@ apply plugin: "com.android.application"
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "com.springwoodcomputers.marvel.marvel"
+        applicationId "com.springwoodcomputers.marvel"
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
@@ -40,6 +40,7 @@ dependencies {
 
     implementation "com.android.support:appcompat-v7:$supportLibraryVersion"
     implementation "com.android.support:design:$supportLibraryVersion"
+    implementation "com.android.support:exifinterface:$supportLibraryVersion"
 
     implementation "com.android.support.constraint:constraint-layout:1.1.0"
     implementation "android.arch.lifecycle:extensions:1.1.1"
@@ -53,6 +54,10 @@ dependencies {
     implementation "com.google.dagger:dagger:2.15"
     implementation "com.google.dagger:dagger-android-support:2.15"
     implementation "com.jakewharton:butterknife:8.8.1"
+
+    implementation('com.squareup.picasso:picasso:2.71828', {
+        exclude group: 'com.android.support', module: 'exifinterface'
+    })
 
     annotationProcessor "com.jakewharton:butterknife-compiler:8.8.1"
     annotationProcessor "com.google.dagger:dagger-compiler:2.15"
