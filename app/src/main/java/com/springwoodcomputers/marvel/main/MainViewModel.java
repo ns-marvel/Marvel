@@ -58,12 +58,16 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     }
 
     void searchForCharacter(CharacterSearch characterSearch, int limit) {
-        searchResults.setValue(new ArrayList<>());
-        loadingInProgress.setValue(true);
-        isInfiniteScrollingActive.setValue(true);
-        manager.searchForCharacters(characterSearch.getSearchString(), limit, 0, this);
-        saveSearchInDatabase(characterSearch);
-        previousCharacterSearch = characterSearch;
+        if (previousCharacterSearch == null || !previousCharacterSearch.equals(characterSearch)) {
+            searchResults.setValue(new ArrayList<>());
+            loadingInProgress.setValue(true);
+            isInfiniteScrollingActive.setValue(true);
+            manager.searchForCharacters(characterSearch.getSearchString(), limit, 0, this);
+            saveSearchInDatabase(characterSearch);
+            previousCharacterSearch = characterSearch;
+            previousOffset = 0;
+            previousLimit = 0;
+        }
     }
 
     private void saveSearchInDatabase(CharacterSearch characterSearch) {

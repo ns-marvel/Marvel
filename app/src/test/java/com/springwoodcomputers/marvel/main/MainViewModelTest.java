@@ -247,4 +247,12 @@ public class MainViewModelTest {
         verify(mockInfiniteScrollingActiveObserver, times(1)).onChanged(true);
         verify(mockInfiniteScrollingActiveObserver, times(1)).onChanged(false);
     }
+
+    @Test
+    public void searchingForCharactersWithPreviousSearchValue_doesNothing() {
+        viewModel.searchForCharacter(characterSearch, limit);
+        viewModel.searchForCharacter(characterSearch, limit);
+
+        verify(mockManager, times(1)).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+    }
 }
