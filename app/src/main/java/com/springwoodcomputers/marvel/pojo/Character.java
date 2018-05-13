@@ -1,5 +1,7 @@
 package com.springwoodcomputers.marvel.pojo;
 
+import com.google.gson.annotations.SerializedName;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,9 +17,16 @@ public class Character {
     @Getter
     private Thumbnail thumbnail;
 
+    @SerializedName("comics")
     private ComicList comicList;
+
+    @SerializedName("stories")
     private StoryList storyList;
+
+    @SerializedName("events")
     private EventList eventList;
+
+    @SerializedName("series")
     private SeriesList seriesList;
 
     public int getComicListCount() {
