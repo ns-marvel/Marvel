@@ -3,7 +3,7 @@ package com.springwoodcomputers.marvel.pojo;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-class Thumbnail {
+public class Thumbnail {
 
     private String path;
     private String extension;
