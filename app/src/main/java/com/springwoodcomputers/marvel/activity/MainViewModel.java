@@ -1,4 +1,4 @@
-package com.springwoodcomputers.marvel.main;
+package com.springwoodcomputers.marvel.activity;
 
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
@@ -9,6 +9,7 @@ import com.springwoodcomputers.marvel.R;
 import com.springwoodcomputers.marvel.api.MarvelServiceManager;
 import com.springwoodcomputers.marvel.database.dao.SearchDao;
 import com.springwoodcomputers.marvel.database.entity.CharacterSearch;
+import com.springwoodcomputers.marvel.main.MainViewState;
 import com.springwoodcomputers.marvel.pojo.Character;
 import com.springwoodcomputers.marvel.pojo.CharacterDataWrapper;
 
@@ -38,6 +39,9 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     private MutableLiveData<List<Character>> searchResults = new MutableLiveData<>();
 
     @Getter
+    private MutableLiveData<Character> selectedCharacter = new MutableLiveData<>();
+
+    @Getter
     private MutableLiveData<String> attributionText = new MutableLiveData<>();
 
     @Getter
@@ -59,7 +63,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     MainViewModel() {
     }
 
-    void searchForCharacter(CharacterSearch characterSearch, int limit) {
+    public void searchForCharacter(CharacterSearch characterSearch, int limit) {
         if (previousCharacterSearch == null || !previousCharacterSearch.equals(characterSearch)) {
             searchResults.setValue(new ArrayList<>());
             saveSearchInDatabase(characterSearch);
@@ -81,7 +85,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         executor.execute(() -> searchDao.insertCharacterSearch(characterSearch));
     }
 
-    void getMoreSearchResults() {
+    public void getMoreSearchResults() {
         if (!allDataLoaded) {
             performSearch(previousCharacterSearch, previousLimit, previousOffset + previousCount);
         }
@@ -121,9 +125,13 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         isInfiniteScrollingActive.setValue(false);
     }
 
-    void retryFailedCharacterSearch() {
+    public void retryFailedCharacterSearch() {
         mainViewState.setValue(new MainViewState());
         getMoreSearchResults();
+    }
+
+    public void onCharacterClicked(Character character) {
+        selectedCharacter.setValue(character);
     }
 
     @Getter

@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.springwoodcomputers.marvel.R;
+import com.springwoodcomputers.marvel.activity.MainViewModel;
 import com.springwoodcomputers.marvel.dagger.ViewModelFactory;
 import com.springwoodcomputers.marvel.database.entity.CharacterSearch;
 import com.springwoodcomputers.marvel.pojo.Character;
@@ -40,6 +41,10 @@ import static com.springwoodcomputers.marvel.utility.InfiniteScrollListener.OnIn
 
 public class MainFragment extends DaggerFragment implements OnCharacterClickedListener, OnInfiniteScrollThresholdReachedListener {
 
+    public static MainFragment newInstance() {
+        return new MainFragment();
+    }
+
     @Inject
     ViewModelFactory viewModelFactory;
 
@@ -58,10 +63,6 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     private SearchResultsAdapter searchResultsAdapter;
     private int limit;
     private InfiniteScrollListener infiniteScrollListener;
-
-    public static MainFragment newInstance() {
-        return new MainFragment();
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -188,6 +189,7 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     public void onCharacterClicked(Character character) {
         // TODO
         Toast.makeText(getContext(), "character clicked " + character.getName(), Toast.LENGTH_LONG).show();
+        viewModel.onCharacterClicked(character);
     }
 
     @Override
