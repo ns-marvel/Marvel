@@ -76,11 +76,14 @@ public class MainViewModelTest {
     private CharacterDataContainer emptyCharacterDataContainer = new CharacterDataContainer(0, 10, 20, 10, emptyCharacterList);
     private CharacterDataWrapper emptyCharacterDataWrapper = new CharacterDataWrapper(attributionText, emptyCharacterDataContainer);
 
+    private int limit = 10;
+    private int zeroOffset = 0;
+
     @Test
     public void newSearch_clearsExistingSearchResults() {
         viewModel.getSearchResults().observeForever(mockSearchResultsObserver);
 
-        viewModel.searchForCharacter(characterSearch);
+        viewModel.searchForCharacter(characterSearch, limit);
 
         verify(mockSearchResultsObserver).onChanged(characterListArgumentCaptor.capture());
         assertEquals(0, characterListArgumentCaptor.getValue().size());
@@ -88,18 +91,18 @@ public class MainViewModelTest {
 
     @Test
     public void searchForCharacter_invokesServiceManagerToSearchForCharacters() {
-        doNothing().when(manager).searchForCharacters(characterSearch.getSearchString(), viewModel);
+        doNothing().when(manager).searchForCharacters(characterSearch.getSearchString(), limit, zeroOffset, viewModel);
 
-        viewModel.searchForCharacter(characterSearch);
+        viewModel.searchForCharacter(characterSearch, limit);
 
-        verify(manager).searchForCharacters(characterSearch.getSearchString(), viewModel);
+        verify(manager).searchForCharacters(characterSearch.getSearchString(), limit, zeroOffset, viewModel);
     }
 
     @Test
     public void whenSearchingForCharacter_searchShouldBeSavedInDatabase() {
-        doNothing().when(manager).searchForCharacters(characterSearch.getSearchString(), viewModel);
+        doNothing().when(manager).searchForCharacters(characterSearch.getSearchString(), limit, zeroOffset, viewModel);
 
-        viewModel.searchForCharacter(characterSearch);
+        viewModel.searchForCharacter(characterSearch, limit);
 
         verify(mockExecutor).execute(runnableArgumentCaptor.capture());
         runnableArgumentCaptor.getValue().run();
@@ -148,7 +151,7 @@ public class MainViewModelTest {
     public void searchingForCharacters_setsLoadingInProgress() {
         viewModel.getLoadingInProgress().observeForever(mockLoadingInProgressObserver);
 
-        viewModel.searchForCharacter(characterSearch);
+        viewModel.searchForCharacter(characterSearch, limit);
 
         verify(mockLoadingInProgressObserver).onChanged(true);
     }

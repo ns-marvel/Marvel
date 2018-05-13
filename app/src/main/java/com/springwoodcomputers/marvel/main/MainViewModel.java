@@ -50,10 +50,10 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     MainViewModel() {
     }
 
-    void searchForCharacter(CharacterSearch characterSearch) {
+    void searchForCharacter(CharacterSearch characterSearch, int limit) {
         searchResults.setValue(new ArrayList<>());
         loadingInProgress.setValue(true);
-        manager.searchForCharacters(characterSearch.getSearchString(), this);
+        manager.searchForCharacters(characterSearch.getSearchString(), limit, 0, this);
         saveSearchInDatabase(characterSearch);
     }
 

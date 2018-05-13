@@ -13,10 +13,6 @@ public class MarvelServiceManager {
     public MarvelServiceManager() {
     }
 
-    public void searchForCharacters(String nameBeginsWith, SearchForCharactersListener listener) {
-        searchForCharacters(nameBeginsWith, 20, 0, listener);
-    }
-
     public void searchForCharacters(String nameBeginsWith, int limit, int offset, SearchForCharactersListener listener) {
         service.getCharactersStartingWith(nameBeginsWith, limit, offset).enqueue(new BaseCallBack<CharacterDataWrapper>() {
             @Override
