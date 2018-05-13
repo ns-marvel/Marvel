@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import com.springwoodcomputers.marvel.database.entity.CharacterSearch;
 import com.springwoodcomputers.marvel.pojo.Character;
 import com.springwoodcomputers.marvel.utility.InfiniteScrollListener;
 import com.springwoodcomputers.marvel.utility.KeyboardHelper;
+import com.springwoodcomputers.marvel.utility.SnackbarUtils;
 
 import java.util.List;
 
@@ -149,7 +151,14 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     }
 
     private void processViewModelState(MainViewState mainViewState) {
+        if (mainViewState.isShowError()) showErrorSnackBar(mainViewState);
         Toast.makeText(getContext(), "viewmodelstate", Toast.LENGTH_SHORT).show();
+    }
+
+    private void showErrorSnackBar(MainViewState errorState) {
+        Snackbar snackbar = SnackbarUtils.makeErrorSnackbar(getView(), errorState.getErrorMessageResource(), errorState.getDuration());
+        snackbar.setAction(errorState.getActionMessageResource(), view -> viewModel.retryFailedCharacterSearch());
+        snackbar.show();
     }
 
     private void updateLoadingInProgress(Boolean isLoadingInProgress) {
