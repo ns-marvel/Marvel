@@ -11,7 +11,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -57,6 +59,9 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     @BindView(R.id.progress_bar)
     ProgressBar progressBar;
 
+    @BindView(R.id.search_button)
+    Button searchButton;
+
     private MainViewModel viewModel;
     private Unbinder unbinder;
     private SavedSearchesAdapter savedSearchesAdapter;
@@ -72,6 +77,7 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
             viewModel = ViewModelProviders.of(getActivity(), viewModelFactory).get(MainViewModel.class);
             viewModel.getMainViewState().observe(this, this::processViewModelState);
             viewModel.getSavedSearches().observe(this, this::updateSavedSearches);
+            viewModel.getIsSearchButtonEnabled().observe(this, this::enableSearchButton);
             viewModel.getSearchResults().observe(this, this::updateSearchResults);
             viewModel.getLoadingInProgress().observe(this, this::updateLoadingInProgress);
         }
@@ -98,6 +104,13 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
         savedSearchesAdapter = new SavedSearchesAdapter(getContext(), viewModel.getCharacterSearchFilter());
         searchBar.setThreshold(1);
         searchBar.setAdapter(savedSearchesAdapter);
+        searchBar.setOnEditorActionListener((textView, actionId, keyEvent) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                onSearchButtonClicked();
+                return true;
+            }
+            return false;
+        });
     }
 
     private void setUpRecyclerView() {
@@ -111,6 +124,11 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
             infiniteScrollListener = new InfiniteScrollListener(layoutManager, threshold, this);
             searchResults.setAdapter(searchResultsAdapter);
             searchResults.addOnScrollListener(infiniteScrollListener);
+
+            if (viewModel.getSearchResults().getValue() != null) {
+                // must have rotated
+                viewModel.setNewLimit(limit);
+            }
         });
     }
 
@@ -140,6 +158,10 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
         savedSearchesAdapter.notifyDataSetChanged();
     }
 
+    private void enableSearchButton(Boolean enabled) {
+        searchButton.setEnabled(enabled != null && enabled);
+    }
+
     private void updateSearchResults(List<Character> characters) {
         int previousCharacterCount = searchResultsAdapter.getItemCount();
 
@@ -152,8 +174,12 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     }
 
     private void processViewModelState(MainViewState mainViewState) {
-        if (mainViewState.isShowError()) showErrorSnackBar(mainViewState);
-        Toast.makeText(getContext(), "viewmodelstate", Toast.LENGTH_SHORT).show();
+        if (mainViewState.isShowError()) {
+            showErrorSnackBar(mainViewState);
+        }
+        if (mainViewState.isNoResultsFound()) {
+            Toast.makeText(getContext(), "Not found", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showErrorSnackBar(MainViewState errorState) {
@@ -175,7 +201,6 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     private void clearSearchBar() {
         KeyboardHelper.hideSoftKeyboard(getView());
         searchBar.dismissDropDown();
-        searchBar.setText("");
         searchBar.clearFocus();
     }
 
