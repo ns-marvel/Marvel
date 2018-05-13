@@ -43,13 +43,16 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     @Getter
     private MutableLiveData<MainViewState> mainViewState = new MutableLiveData<>();
 
+    @Getter
+    private MutableLiveData<Boolean> loadingInProgress = new MutableLiveData<>();
+
     @Inject
     MainViewModel() {
     }
 
-
     void searchForCharacter(CharacterSearch characterSearch) {
         searchResults.setValue(new ArrayList<>());
+        loadingInProgress.setValue(true);
         manager.searchForCharacters(characterSearch.getSearchString(), this);
         saveSearchInDatabase(characterSearch);
     }
@@ -57,7 +60,6 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     private void saveSearchInDatabase(CharacterSearch characterSearch) {
         executor.execute(() -> searchDao.insertCharacterSearch(characterSearch));
     }
-
 
     @Override
     public void onSearchSucceeded(CharacterDataWrapper characterDataWrapper) {
@@ -72,11 +74,13 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         if (newAttributionText != null && !newAttributionText.equals(attributionText.getValue())) {
             attributionText.setValue(newAttributionText);
         }
+        loadingInProgress.setValue(false);
     }
 
     @Override
     public void onSearchFailed() {
         mainViewState.setValue(new MainViewState(Snackbar.LENGTH_INDEFINITE, R.string.network_error, R.string.retry));
+        loadingInProgress.setValue(false);
     }
 
     @Getter

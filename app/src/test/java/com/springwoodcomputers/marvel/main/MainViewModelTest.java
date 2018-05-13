@@ -51,6 +51,9 @@ public class MainViewModelTest {
     private Observer<MainViewState> mockMainViewStateObserver;
 
     @Mock
+    private Observer<Boolean> mockLoadingInProgressObserver;
+
+    @Mock
     private Observer<String> mockAttributionTextObserver;
 
     @Captor
@@ -142,10 +145,29 @@ public class MainViewModelTest {
     }
 
     @Test
-    public void getMatchingSearchQueries_returnsListOfCharacterSearchesFromDatabase() {
+    public void searchingForCharacters_setsLoadingInProgress() {
+        viewModel.getLoadingInProgress().observeForever(mockLoadingInProgressObserver);
 
-        viewModel.getMatchingSavedSearches(characterSearch);
+        viewModel.searchForCharacter(characterSearch);
 
-        verify(mockSearchDao).getMatchingPreviousSearches(characterSearch.getSearchString());
+        verify(mockLoadingInProgressObserver).onChanged(true);
+    }
+
+    @Test
+    public void searchingForCharacters_searchSuccessResetsLoadingInProgress() {
+        viewModel.getLoadingInProgress().observeForever(mockLoadingInProgressObserver);
+
+        viewModel.onSearchSucceeded(characterDataWrapper);
+
+        verify(mockLoadingInProgressObserver).onChanged(false);
+    }
+
+    @Test
+    public void searchingForCharacters_searchFailureResetsLoadingInProgress() {
+        viewModel.getLoadingInProgress().observeForever(mockLoadingInProgressObserver);
+
+        viewModel.onSearchFailed();
+
+        verify(mockLoadingInProgressObserver).onChanged(false);
     }
 }
