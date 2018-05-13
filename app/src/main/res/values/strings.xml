@@ -4,4 +4,22 @@
     <string name="retry">RETRY</string>
     <string name="search_hint">Search for Marvel characters</string>
     <string name="search_button_text">Search</string>
+
+    <string name="series_achievements">Appears in %d series</string>
+
+    <plurals name="comicAchievements">
+        <item quantity="one">Appears in %d comic</item>
+        <item quantity="other">Appears in %d comics</item>
+    </plurals>
+
+    <plurals name="storyAchievements">
+        <item quantity="one">Appears in %d story</item>
+        <item quantity="other">Appears in %d stories</item>
+    </plurals>
+
+    <plurals name="eventAchievements">
+        <item quantity="one">Appears at %d event</item>
+        <item quantity="other">Appears at %d events</item>
+    </plurals>
+
 </resources>
