@@ -180,20 +180,18 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
-    }
-
-    @Override
     public void onCharacterClicked(Character character) {
-        // TODO
-        Toast.makeText(getContext(), "character clicked " + character.getName(), Toast.LENGTH_LONG).show();
         viewModel.onCharacterClicked(character);
     }
 
     @Override
     public void onInfiniteScrollThresholdReached() {
         viewModel.getMoreSearchResults();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 }
