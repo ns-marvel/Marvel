@@ -49,7 +49,7 @@ public class MarvelServiceManagerTest {
     public void searchSuccess_callsBackToOnSearchSucceeded() {
         doReturn(mockCall).when(mockService).getCharactersStartingWith(characterStartsWith, limit, offset);
 
-        manager.searchForCharacters(characterStartsWith, mockSearchForCharactersListener);
+        manager.searchForCharacters(characterStartsWith, limit, offset, mockSearchForCharactersListener);
 
         verify(mockService).getCharactersStartingWith(characterStartsWith, limit, offset);
         verify(mockCall).enqueue(searchForCharactersCaptor.capture());
@@ -63,7 +63,7 @@ public class MarvelServiceManagerTest {
     public void searchFailure_callsBackToOnSearchFailed() {
         doReturn(mockCall).when(mockService).getCharactersStartingWith(characterStartsWith, limit, offset);
 
-        manager.searchForCharacters(characterStartsWith, mockSearchForCharactersListener);
+        manager.searchForCharacters(characterStartsWith, limit, offset, mockSearchForCharactersListener);
 
         verify(mockService).getCharactersStartingWith(characterStartsWith, limit, offset);
         verify(mockCall).enqueue(searchForCharactersCaptor.capture());

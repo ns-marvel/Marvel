@@ -46,26 +46,49 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     @Getter
     private MutableLiveData<Boolean> loadingInProgress = new MutableLiveData<>();
 
+    @Getter
+    private MutableLiveData<Boolean> isInfiniteScrollingActive = new MutableLiveData<>();
+
+    private int previousOffset;
+    private int previousLimit;
+    private CharacterSearch previousCharacterSearch;
+
     @Inject
     MainViewModel() {
     }
 
-    void searchForCharacter(CharacterSearch characterSearch) {
-        searchResults.setValue(new ArrayList<>());
-        loadingInProgress.setValue(true);
-        manager.searchForCharacters(characterSearch.getSearchString(), this);
-        saveSearchInDatabase(characterSearch);
+    void searchForCharacter(CharacterSearch characterSearch, int limit) {
+        if (previousCharacterSearch == null || !previousCharacterSearch.equals(characterSearch)) {
+            searchResults.setValue(new ArrayList<>());
+            loadingInProgress.setValue(true);
+            isInfiniteScrollingActive.setValue(true);
+            manager.searchForCharacters(characterSearch.getSearchString(), limit, 0, this);
+            saveSearchInDatabase(characterSearch);
+            previousCharacterSearch = characterSearch;
+            previousOffset = 0;
+            previousLimit = 0;
+        }
     }
 
     private void saveSearchInDatabase(CharacterSearch characterSearch) {
         executor.execute(() -> searchDao.insertCharacterSearch(characterSearch));
     }
 
+    void getMoreSearchResults() {
+        loadingInProgress.setValue(true);
+        isInfiniteScrollingActive.setValue(true);
+        manager.searchForCharacters(previousCharacterSearch.getSearchString(), previousLimit, previousOffset + previousLimit, this);
+    }
+
+    private static final String TAG = "MainViewModel";
     @Override
     public void onSearchSucceeded(CharacterDataWrapper characterDataWrapper) {
         List<Character> characterList = characterDataWrapper.getCharacterDataContainer().getCharacterList();
         if (characterList != null && characterList.size() > 0) {
-            searchResults.setValue(characterList);
+            List<Character> newCharacterList = new ArrayList<>();
+            if (searchResults.getValue() != null) newCharacterList.addAll(searchResults.getValue());
+            newCharacterList.addAll(characterList);
+            searchResults.setValue(newCharacterList);
         } else {
             mainViewState.setValue(new MainViewState(true));
         }
@@ -75,12 +98,18 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
             attributionText.setValue(newAttributionText);
         }
         loadingInProgress.setValue(false);
+        previousLimit = characterDataWrapper.getCharacterDataContainer().getLimit();
+        previousOffset = characterDataWrapper.getCharacterDataContainer().getOffset();
+        if (characterDataWrapper.getCharacterDataContainer().getTotal() <= previousLimit + previousOffset) {
+            isInfiniteScrollingActive.setValue(false);
+        }
     }
 
     @Override
     public void onSearchFailed() {
         mainViewState.setValue(new MainViewState(Snackbar.LENGTH_INDEFINITE, R.string.network_error, R.string.retry));
         loadingInProgress.setValue(false);
+        isInfiniteScrollingActive.setValue(false);
     }
 
     @Getter

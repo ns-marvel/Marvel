@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -36,7 +38,7 @@ public class MainViewModelTest {
     public InstantTaskExecutorRule instantExecutorRule = new InstantTaskExecutorRule();
 
     @Mock
-    private MarvelServiceManager manager;
+    private MarvelServiceManager mockManager;
 
     @Mock
     private SearchDao mockSearchDao;
@@ -56,6 +58,12 @@ public class MainViewModelTest {
     @Mock
     private Observer<String> mockAttributionTextObserver;
 
+    @Mock
+    private Observer<Boolean> mockInfiniteScrollingActiveObserver;
+
+    @Captor
+    private ArgumentCaptor<MarvelServiceManager.SearchForCharactersListener> searchForCharactersListenerCaptor;
+
     @Captor
     private ArgumentCaptor<Runnable> runnableArgumentCaptor;
 
@@ -73,14 +81,18 @@ public class MainViewModelTest {
     private CharacterDataWrapper characterDataWrapper = new CharacterDataWrapper(attributionText, characterDataContainer);
 
     private List<Character> emptyCharacterList = Collections.emptyList();
-    private CharacterDataContainer emptyCharacterDataContainer = new CharacterDataContainer(0, 10, 20, 10, emptyCharacterList);
+    private CharacterDataContainer emptyCharacterDataContainer = new CharacterDataContainer(0, 10, 0, 10, emptyCharacterList);
     private CharacterDataWrapper emptyCharacterDataWrapper = new CharacterDataWrapper(attributionText, emptyCharacterDataContainer);
+
+    private int limit = 10;
+    private int zeroOffset = 0;
+    private int subsequentOffset = 10;
 
     @Test
     public void newSearch_clearsExistingSearchResults() {
         viewModel.getSearchResults().observeForever(mockSearchResultsObserver);
 
-        viewModel.searchForCharacter(characterSearch);
+        viewModel.searchForCharacter(characterSearch, limit);
 
         verify(mockSearchResultsObserver).onChanged(characterListArgumentCaptor.capture());
         assertEquals(0, characterListArgumentCaptor.getValue().size());
@@ -88,18 +100,18 @@ public class MainViewModelTest {
 
     @Test
     public void searchForCharacter_invokesServiceManagerToSearchForCharacters() {
-        doNothing().when(manager).searchForCharacters(characterSearch.getSearchString(), viewModel);
+        doNothing().when(mockManager).searchForCharacters(characterSearch.getSearchString(), limit, zeroOffset, viewModel);
 
-        viewModel.searchForCharacter(characterSearch);
+        viewModel.searchForCharacter(characterSearch, limit);
 
-        verify(manager).searchForCharacters(characterSearch.getSearchString(), viewModel);
+        verify(mockManager).searchForCharacters(characterSearch.getSearchString(), limit, zeroOffset, viewModel);
     }
 
     @Test
     public void whenSearchingForCharacter_searchShouldBeSavedInDatabase() {
-        doNothing().when(manager).searchForCharacters(characterSearch.getSearchString(), viewModel);
+        doNothing().when(mockManager).searchForCharacters(characterSearch.getSearchString(), limit, zeroOffset, viewModel);
 
-        viewModel.searchForCharacter(characterSearch);
+        viewModel.searchForCharacter(characterSearch, limit);
 
         verify(mockExecutor).execute(runnableArgumentCaptor.capture());
         runnableArgumentCaptor.getValue().run();
@@ -148,7 +160,7 @@ public class MainViewModelTest {
     public void searchingForCharacters_setsLoadingInProgress() {
         viewModel.getLoadingInProgress().observeForever(mockLoadingInProgressObserver);
 
-        viewModel.searchForCharacter(characterSearch);
+        viewModel.searchForCharacter(characterSearch, limit);
 
         verify(mockLoadingInProgressObserver).onChanged(true);
     }
@@ -169,5 +181,78 @@ public class MainViewModelTest {
         viewModel.onSearchFailed();
 
         verify(mockLoadingInProgressObserver).onChanged(false);
+    }
+
+    @Test
+    public void searchingForMoreCharacters_setsLoadingInProgress() {
+        viewModel.getLoadingInProgress().observeForever(mockLoadingInProgressObserver);
+        viewModel.searchForCharacter(characterSearch, limit);
+
+        viewModel.getMoreSearchResults();
+
+        verify(mockLoadingInProgressObserver, times(2)).onChanged(true);
+    }
+
+    @Test
+    public void SearchingForMoreCharacters_usesValuesFromPreviousSuccessfulSearch() {
+        viewModel.searchForCharacter(characterSearch, limit);
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+
+        searchForCharactersListenerCaptor.getValue().onSearchSucceeded(characterDataWrapper);
+
+        viewModel.getMoreSearchResults();
+
+        verify(mockManager).searchForCharacters(characterSearch.getSearchString(), limit, subsequentOffset, viewModel);
+    }
+
+    @Test
+    public void searchingForCharacters_enablesInfiniteScrolling() {
+        viewModel.getIsInfiniteScrollingActive().observeForever(mockInfiniteScrollingActiveObserver);
+
+        viewModel.searchForCharacter(characterSearch, limit);
+
+        verify(mockInfiniteScrollingActiveObserver).onChanged(true);
+    }
+
+    @Test
+    public void searchingForMoreCharacters_enablesInfiniteScrolling() {
+        viewModel.getIsInfiniteScrollingActive().observeForever(mockInfiniteScrollingActiveObserver);
+
+        viewModel.searchForCharacter(characterSearch, limit);
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+
+        viewModel.getMoreSearchResults();
+
+        verify(mockInfiniteScrollingActiveObserver, times(2)).onChanged(true);
+    }
+
+    @Test
+    public void searchingForCharacters_searchFailureDisablesInfiniteScrolling() {
+        viewModel.getIsInfiniteScrollingActive().observeForever(mockInfiniteScrollingActiveObserver);
+
+        viewModel.onSearchFailed();
+
+        verify(mockInfiniteScrollingActiveObserver).onChanged(false);
+    }
+
+    @Test
+    public void searchingForCharacters_infiniteScrollingIsDisabledWhenNoMoreResults() {
+        viewModel.getIsInfiniteScrollingActive().observeForever(mockInfiniteScrollingActiveObserver);
+
+        viewModel.searchForCharacter(characterSearch, limit);
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+
+        searchForCharactersListenerCaptor.getValue().onSearchSucceeded(emptyCharacterDataWrapper);
+
+        verify(mockInfiniteScrollingActiveObserver, times(1)).onChanged(true);
+        verify(mockInfiniteScrollingActiveObserver, times(1)).onChanged(false);
+    }
+
+    @Test
+    public void searchingForCharactersWithPreviousSearchValue_doesNothing() {
+        viewModel.searchForCharacter(characterSearch, limit);
+        viewModel.searchForCharacter(characterSearch, limit);
+
+        verify(mockManager, times(1)).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
     }
 }
