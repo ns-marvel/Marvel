@@ -58,12 +58,42 @@ public class MainActivity extends DaggerAppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        setUpView(savedInstanceState);
+        setUpView();
 
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel.class);
         viewModel.getAttributionText().observe(this, this::setAttributionText);
         viewModel.getSelectedCharacter().observe(this, this::launchChildFragment);
+    }
 
+    private void setUpView() {
+        isSinglePane = childContainer == null;
+
+        addMainFragment();
+        addEmptyChildFragmentIfRequired();
+    }
+
+    private void addMainFragment() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.main_container, MainFragment.newInstance())
+                .commitNow();
+    }
+
+    private void addEmptyChildFragmentIfRequired() {
+        placeholderImage.setVisibility(VISIBLE);
+        if (!isSinglePane) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.child_container, ChildFragment.newInstance(), CHILD_FRAGMENT)
+                    .commitNow();
+        }
+    }
+
+    private void setAttributionText(String newAttributionText) {
+        attributionTextView.setText(newAttributionText);
+        if (isSinglePane) {
+            placeholderImage.setVisibility(GONE);
+        }
     }
 
     private void launchChildFragment(@SuppressWarnings("unused") Character character) {
@@ -81,43 +111,6 @@ public class MainActivity extends DaggerAppCompatActivity {
             placeholderImage.setVisibility(GONE);
         }
     }
-
-    private void setAttributionText(String newAttributionText) {
-        attributionTextView.setText(newAttributionText);
-        if (isSinglePane) {
-            placeholderImage.setVisibility(GONE);
-        }
-    }
-
-
-    private void setUpView(Bundle savedInstanceState) {
-        isSinglePane = childContainer == null;
-
-//        if (savedInstanceState == null) {
-        addMainFragment();
-        addEmptyChildFragmentIfRequired();
-//        }
-
-    }
-
-    private void addMainFragment() {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.main_container, MainFragment.newInstance())
-                .commitNow();
-    }
-
-    private void addEmptyChildFragmentIfRequired() {
-        placeholderImage.setVisibility(VISIBLE);
-        if (!isSinglePane) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .add(R.id.child_container, ChildFragment.newInstance(), CHILD_FRAGMENT)
-                    .commitNow();
-            placeholderImage.setVisibility(VISIBLE);
-        }
-    }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
