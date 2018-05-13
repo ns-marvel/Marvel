@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -79,6 +82,10 @@ public class MainViewModelTest {
     private List<Character> characterList = Collections.singletonList(new Character());
     private CharacterDataContainer characterDataContainer = new CharacterDataContainer(0, 10, 20, 10, characterList);
     private CharacterDataWrapper characterDataWrapper = new CharacterDataWrapper(attributionText, characterDataContainer);
+
+    private CharacterDataContainer subsequentCharacterDataContainer = new CharacterDataContainer(10, 10, 20, 10, characterList);
+    private CharacterDataWrapper subsequentCharacterDataWrapper = new CharacterDataWrapper(attributionText, subsequentCharacterDataContainer);
+
 
     private List<Character> emptyCharacterList = Collections.emptyList();
     private CharacterDataContainer emptyCharacterDataContainer = new CharacterDataContainer(0, 10, 0, 10, emptyCharacterList);
@@ -254,6 +261,32 @@ public class MainViewModelTest {
         viewModel.searchForCharacter(characterSearch, limit);
 
         verify(mockManager, times(1)).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+    }
+
+    @Test
+    public void SearchingForMoreCharacters_shouldOnlyBeAttemptedIfMoreAvailable() {
+        viewModel.searchForCharacter(characterSearch, limit);
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+        searchForCharactersListenerCaptor.getValue().onSearchSucceeded(characterDataWrapper);
+
+        viewModel.getMoreSearchResults();
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(subsequentOffset), searchForCharactersListenerCaptor.capture());
+        searchForCharactersListenerCaptor.getValue().onSearchSucceeded(subsequentCharacterDataWrapper);
+
+        viewModel.getMoreSearchResults();
+
+        verify(mockManager, times(2)).searchForCharacters(anyString(), anyInt(), anyInt(), any(MarvelServiceManager.SearchForCharactersListener.class));
+    }
+
+    @Test
+    public void retry_shouldClearTheErrorState() {
+        viewModel.getMainViewState().observeForever(mockMainViewStateObserver);
+        viewModel.searchForCharacter(characterSearch, limit);
+
+        viewModel.retryFailedCharacterSearch();
+
+        verify(mockMainViewStateObserver).onChanged(new MainViewState());
+
     }
 
     @Test

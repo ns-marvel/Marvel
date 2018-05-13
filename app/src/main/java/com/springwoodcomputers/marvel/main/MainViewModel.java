@@ -53,6 +53,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     private int previousLimit;
     private int previousCount;
     private CharacterSearch previousCharacterSearch;
+    private boolean allDataLoaded;
 
     @Inject
     MainViewModel() {
@@ -66,6 +67,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
             previousCharacterSearch = characterSearch;
             previousCount = 0;
             previousLimit = limit;
+            allDataLoaded = false;
         }
     }
 
@@ -80,10 +82,11 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     }
 
     void getMoreSearchResults() {
-        performSearch(previousCharacterSearch, previousLimit, previousOffset + previousCount);
+        if (!allDataLoaded) {
+            performSearch(previousCharacterSearch, previousLimit, previousOffset + previousCount);
+        }
     }
 
-    private static final String TAG = "MainViewModel";
     @Override
     public void onSearchSucceeded(CharacterDataWrapper characterDataWrapper) {
         List<Character> characterList = characterDataWrapper.getCharacterDataContainer().getCharacterList();
@@ -104,7 +107,9 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         previousLimit = characterDataWrapper.getCharacterDataContainer().getLimit();
         previousOffset = characterDataWrapper.getCharacterDataContainer().getOffset();
         previousCount = characterDataWrapper.getCharacterDataContainer().getCount();
-        if (characterDataWrapper.getCharacterDataContainer().getTotal() <= previousLimit + previousOffset) {
+
+        allDataLoaded = characterDataWrapper.getCharacterDataContainer().getTotal() <= previousLimit + previousOffset;
+        if (allDataLoaded) {
             isInfiniteScrollingActive.setValue(false);
         }
     }
@@ -116,7 +121,8 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         isInfiniteScrollingActive.setValue(false);
     }
 
-    public void retryFailedCharacterSearch() {
+    void retryFailedCharacterSearch() {
+        mainViewState.setValue(new MainViewState());
         getMoreSearchResults();
     }
 
