@@ -46,6 +46,10 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     @Getter
     private MutableLiveData<Boolean> loadingInProgress = new MutableLiveData<>();
 
+    private int previousOffset;
+    private int previousLimit;
+    private CharacterSearch previousCharacterSearch;
+
     @Inject
     MainViewModel() {
     }
@@ -55,17 +59,25 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         loadingInProgress.setValue(true);
         manager.searchForCharacters(characterSearch.getSearchString(), limit, 0, this);
         saveSearchInDatabase(characterSearch);
+        previousCharacterSearch = characterSearch;
     }
 
     private void saveSearchInDatabase(CharacterSearch characterSearch) {
         executor.execute(() -> searchDao.insertCharacterSearch(characterSearch));
     }
 
+    void getMoreSearchResults() {
+        manager.searchForCharacters(previousCharacterSearch.getSearchString(), previousLimit, previousOffset + previousLimit, this);
+    }
+
     @Override
     public void onSearchSucceeded(CharacterDataWrapper characterDataWrapper) {
         List<Character> characterList = characterDataWrapper.getCharacterDataContainer().getCharacterList();
         if (characterList != null && characterList.size() > 0) {
-            searchResults.setValue(characterList);
+            List<Character> newCharacterList = new ArrayList<>();
+            if (searchResults.getValue() != null) newCharacterList.addAll(searchResults.getValue());
+            newCharacterList.addAll(characterList);
+            searchResults.setValue(newCharacterList);
         } else {
             mainViewState.setValue(new MainViewState(true));
         }
@@ -75,6 +87,8 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
             attributionText.setValue(newAttributionText);
         }
         loadingInProgress.setValue(false);
+        previousLimit = characterDataWrapper.getCharacterDataContainer().getLimit();
+        previousOffset = characterDataWrapper.getCharacterDataContainer().getOffset();
     }
 
     @Override
