@@ -6,6 +6,8 @@ import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
+import java.util.Objects;
+
 import lombok.Getter;
 
 @Entity(tableName = "search_history",
@@ -37,5 +39,18 @@ public class CharacterSearch {
     @Override
     public String toString() {
         return searchString;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CharacterSearch that = (CharacterSearch) o;
+        return Objects.equals(searchString, that.searchString);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(searchString);
     }
 }
