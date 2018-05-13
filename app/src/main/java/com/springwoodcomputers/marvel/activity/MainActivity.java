@@ -3,9 +3,11 @@ package com.springwoodcomputers.marvel.activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBar;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.springwoodcomputers.marvel.R;
@@ -20,6 +22,9 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerAppCompatActivity;
+
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 
 public class MainActivity extends DaggerAppCompatActivity {
 
@@ -40,6 +45,9 @@ public class MainActivity extends DaggerAppCompatActivity {
     @BindView(R.id.attribution_text)
     TextView attributionTextView;
 
+    @BindView(R.id.placeholder_image)
+    ImageView placeholderImage;
+
     private MainViewModel viewModel;
     private boolean isSinglePane;
 
@@ -58,29 +66,27 @@ public class MainActivity extends DaggerAppCompatActivity {
 
     }
 
-    private void launchChildFragment(Character character) {
+    private void launchChildFragment(@SuppressWarnings("unused") Character character) {
         if (isSinglePane) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.main_container, ChildFragment.newInstance(character), CHILD_FRAGMENT)
+                    .replace(R.id.main_container, ChildFragment.newInstance(), CHILD_FRAGMENT)
                     .addToBackStack(null)
                     .commit();
-        } else {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            Fragment childFragment = fragmentManager.findFragmentByTag(CHILD_FRAGMENT);
-            if (childFragment == null) {
-                fragmentManager
-                        .beginTransaction()
-                        .add(R.id.child_fragment, ChildFragment.newInstance(character), CHILD_FRAGMENT)
-                        .commit();
-            } else {
-                ((ChildFragment) childFragment).setCharacter(character);
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setDisplayHomeAsUpEnabled(true);
             }
+        } else {
+            placeholderImage.setVisibility(GONE);
         }
     }
 
     private void setAttributionText(String newAttributionText) {
         attributionTextView.setText(newAttributionText);
+        if (isSinglePane) {
+            placeholderImage.setVisibility(GONE);
+        }
     }
 
 
@@ -88,7 +94,7 @@ public class MainActivity extends DaggerAppCompatActivity {
         isSinglePane = childContainer == null;
 
 //        if (savedInstanceState == null) {
-            addMainFragment();
+        addMainFragment();
         addEmptyChildFragmentIfRequired();
 //        }
 
@@ -102,12 +108,41 @@ public class MainActivity extends DaggerAppCompatActivity {
     }
 
     private void addEmptyChildFragmentIfRequired() {
+        placeholderImage.setVisibility(VISIBLE);
         if (!isSinglePane) {
             getSupportFragmentManager()
                     .beginTransaction()
                     .add(R.id.child_container, ChildFragment.newInstance(), CHILD_FRAGMENT)
                     .commitNow();
+            placeholderImage.setVisibility(VISIBLE);
         }
+    }
 
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isSinglePane) {
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setDisplayHomeAsUpEnabled(false);
+            }
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            if (fragmentManager.getBackStackEntryCount() > 0) {
+                getSupportFragmentManager().popBackStack();
+            } else {
+                super.onBackPressed();
+            }
+        } else {
+            super.onBackPressed();
+        }
     }
 }
