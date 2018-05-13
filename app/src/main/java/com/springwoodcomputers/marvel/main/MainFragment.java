@@ -18,6 +18,7 @@ import com.springwoodcomputers.marvel.R;
 import com.springwoodcomputers.marvel.dagger.ViewModelFactory;
 import com.springwoodcomputers.marvel.database.entity.CharacterSearch;
 import com.springwoodcomputers.marvel.pojo.Character;
+import com.springwoodcomputers.marvel.utility.InfiniteScrollListener;
 import com.springwoodcomputers.marvel.utility.KeyboardHelper;
 
 import java.util.List;
@@ -32,8 +33,10 @@ import dagger.android.support.DaggerFragment;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static com.springwoodcomputers.marvel.main.SearchResultsAdapter.OnCharacterClickedListener;
+import static com.springwoodcomputers.marvel.utility.InfiniteScrollListener.OnInfiniteScrollThresholdReachedListener;
 
-public class MainFragment extends DaggerFragment implements SearchResultsAdapter.OnCharacterClickedListener {
+public class MainFragment extends DaggerFragment implements OnCharacterClickedListener, OnInfiniteScrollThresholdReachedListener {
 
     @Inject
     ViewModelFactory viewModelFactory;
@@ -51,6 +54,8 @@ public class MainFragment extends DaggerFragment implements SearchResultsAdapter
     private Unbinder unbinder;
     private SavedSearchesAdapter savedSearchesAdapter;
     private SearchResultsAdapter searchResultsAdapter;
+    private int limit;
+    private InfiniteScrollListener infiniteScrollListener;
 
     public static MainFragment newInstance() {
         return new MainFragment();
@@ -90,16 +95,19 @@ public class MainFragment extends DaggerFragment implements SearchResultsAdapter
         savedSearchesAdapter = new SavedSearchesAdapter(getContext(), viewModel.getCharacterSearchFilter());
         searchBar.setThreshold(1);
         searchBar.setAdapter(savedSearchesAdapter);
-        searchBar.setOnItemClickListener((parent, view, position, id) -> {
-            viewModel.searchForCharacter(savedSearchesAdapter.getItem(position));
-        });
     }
 
     private void setUpRecyclerView() {
         searchResults.post(() -> {
             int numberOfColumns = calculateNumberOfColumns();
-            searchResults.setLayoutManager(new GridLayoutManager(getContext(), numberOfColumns));
+            int numberOfRows = calculateNumberOfRows();
+            int threshold = numberOfColumns * numberOfRows + numberOfColumns + 1;
+            limit = numberOfColumns * numberOfRows * 2;
+            GridLayoutManager layoutManager = new GridLayoutManager(getContext(), numberOfColumns);
+            searchResults.setLayoutManager(layoutManager);
+            infiniteScrollListener = new InfiniteScrollListener(layoutManager, threshold, this);
             searchResults.setAdapter(searchResultsAdapter);
+            searchResults.addOnScrollListener(infiniteScrollListener);
         });
     }
 
@@ -108,9 +116,19 @@ public class MainFragment extends DaggerFragment implements SearchResultsAdapter
             int widthInPixels = getView().getWidth();
             int pixelDpi = Resources.getSystem().getDisplayMetrics().densityDpi;
             int widthInDpi = (widthInPixels / pixelDpi) * 160;
-            return widthInDpi / 112;
+            return Math.min(6, widthInDpi / 112);
         }
         return 3;
+    }
+
+    private int calculateNumberOfRows() {
+        if (getView() != null) {
+            int heightInPixels = getView().getHeight();
+            int pixelDpi = Resources.getSystem().getDisplayMetrics().densityDpi;
+            int heightInDpi = (heightInPixels / pixelDpi) * 160;
+            return heightInDpi / 130;
+        }
+        return 8;
     }
 
     private void updateSavedSearches(List<CharacterSearch> savedSearches) {
@@ -120,8 +138,14 @@ public class MainFragment extends DaggerFragment implements SearchResultsAdapter
     }
 
     private void updateSearchResults(List<Character> characters) {
+        int previousCharacterCount = searchResultsAdapter.getItemCount();
+
         searchResultsAdapter.setCharacterList(characters);
         searchResultsAdapter.notifyDataSetChanged();
+
+        if (characters.size() > previousCharacterCount && infiniteScrollListener != null) {
+            infiniteScrollListener.setThresholdReachHandled(characters.size() - previousCharacterCount);
+        }
     }
 
     private void processViewModelState(MainViewState mainViewState) {
@@ -134,7 +158,11 @@ public class MainFragment extends DaggerFragment implements SearchResultsAdapter
 
     @OnClick(R.id.search_button)
     void onSearchButtonClicked() {
-        viewModel.searchForCharacter(new CharacterSearch(searchBar.getText().toString()));
+        viewModel.searchForCharacter(new CharacterSearch(searchBar.getText().toString()), limit);
+        clearSearchBar();
+    }
+
+    private void clearSearchBar() {
         KeyboardHelper.hideSoftKeyboard(getView());
         searchBar.dismissDropDown();
         searchBar.setText("");
@@ -151,5 +179,10 @@ public class MainFragment extends DaggerFragment implements SearchResultsAdapter
     public void onCharacterClicked(Character character) {
         // TODO
         Toast.makeText(getContext(), "character clicked " + character.getName(), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onInfiniteScrollThresholdReached() {
+        viewModel.getMoreSearchResults();
     }
 }
