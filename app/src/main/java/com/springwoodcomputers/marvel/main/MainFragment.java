@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.springwoodcomputers.marvel.R;
@@ -29,6 +30,9 @@ import butterknife.OnClick;
 import butterknife.Unbinder;
 import dagger.android.support.DaggerFragment;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 public class MainFragment extends DaggerFragment implements SearchResultsAdapter.OnCharacterClickedListener {
 
     @Inject
@@ -39,6 +43,9 @@ public class MainFragment extends DaggerFragment implements SearchResultsAdapter
 
     @BindView(R.id.search_results)
     RecyclerView searchResults;
+
+    @BindView(R.id.progress_bar)
+    ProgressBar progressBar;
 
     private MainViewModel viewModel;
     private Unbinder unbinder;
@@ -58,6 +65,7 @@ public class MainFragment extends DaggerFragment implements SearchResultsAdapter
             viewModel.getMainViewState().observe(this, this::processViewModelState);
             viewModel.getSavedSearches().observe(this, this::updateSavedSearches);
             viewModel.getSearchResults().observe(this, this::updateSearchResults);
+            viewModel.getLoadingInProgress().observe(this, this::updateLoadingInProgress);
         }
     }
 
@@ -120,6 +128,9 @@ public class MainFragment extends DaggerFragment implements SearchResultsAdapter
         Toast.makeText(getContext(), "viewmodelstate", Toast.LENGTH_SHORT).show();
     }
 
+    private void updateLoadingInProgress(Boolean isLoadingInProgress) {
+        progressBar.setVisibility(isLoadingInProgress == null || !isLoadingInProgress ? GONE : VISIBLE);
+    }
 
     @OnClick(R.id.search_button)
     void onSearchButtonClicked() {

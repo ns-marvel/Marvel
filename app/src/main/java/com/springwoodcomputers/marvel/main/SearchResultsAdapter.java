@@ -63,7 +63,7 @@ class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.Sea
         @BindView(R.id.character_image)
         ImageView characterImage;
 
-        public SearchResultsViewHolder(View itemView) {
+        SearchResultsViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
             itemView.setOnClickListener((v) -> listener.onCharacterClicked(characterList.get(getAdapterPosition())));
