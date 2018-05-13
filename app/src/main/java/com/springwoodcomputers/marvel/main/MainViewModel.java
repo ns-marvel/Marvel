@@ -51,6 +51,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
 
     private int previousOffset;
     private int previousLimit;
+    private int previousCount;
     private CharacterSearch previousCharacterSearch;
 
     @Inject
@@ -60,14 +61,18 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     void searchForCharacter(CharacterSearch characterSearch, int limit) {
         if (previousCharacterSearch == null || !previousCharacterSearch.equals(characterSearch)) {
             searchResults.setValue(new ArrayList<>());
-            loadingInProgress.setValue(true);
-            isInfiniteScrollingActive.setValue(true);
-            manager.searchForCharacters(characterSearch.getSearchString(), limit, 0, this);
             saveSearchInDatabase(characterSearch);
+            performSearch(characterSearch, limit, 0);
             previousCharacterSearch = characterSearch;
-            previousOffset = 0;
-            previousLimit = 0;
+            previousCount = 0;
+            previousLimit = limit;
         }
+    }
+
+    private void performSearch(CharacterSearch characterSearch, int limit, int offset) {
+        loadingInProgress.setValue(true);
+        isInfiniteScrollingActive.setValue(true);
+        manager.searchForCharacters(characterSearch.getSearchString(), limit, offset, this);
     }
 
     private void saveSearchInDatabase(CharacterSearch characterSearch) {
@@ -75,9 +80,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     }
 
     void getMoreSearchResults() {
-        loadingInProgress.setValue(true);
-        isInfiniteScrollingActive.setValue(true);
-        manager.searchForCharacters(previousCharacterSearch.getSearchString(), previousLimit, previousOffset + previousLimit, this);
+        performSearch(previousCharacterSearch, previousLimit, previousOffset + previousCount);
     }
 
     private static final String TAG = "MainViewModel";
@@ -100,6 +103,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         loadingInProgress.setValue(false);
         previousLimit = characterDataWrapper.getCharacterDataContainer().getLimit();
         previousOffset = characterDataWrapper.getCharacterDataContainer().getOffset();
+        previousCount = characterDataWrapper.getCharacterDataContainer().getCount();
         if (characterDataWrapper.getCharacterDataContainer().getTotal() <= previousLimit + previousOffset) {
             isInfiniteScrollingActive.setValue(false);
         }
@@ -110,6 +114,10 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         mainViewState.setValue(new MainViewState(Snackbar.LENGTH_INDEFINITE, R.string.network_error, R.string.retry));
         loadingInProgress.setValue(false);
         isInfiniteScrollingActive.setValue(false);
+    }
+
+    public void retryFailedCharacterSearch() {
+        getMoreSearchResults();
     }
 
     @Getter

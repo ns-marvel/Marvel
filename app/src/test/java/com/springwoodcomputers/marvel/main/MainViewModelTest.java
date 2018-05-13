@@ -255,4 +255,33 @@ public class MainViewModelTest {
 
         verify(mockManager, times(1)).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
     }
+
+    @Test
+    public void retryShouldRepeatTheLastAttempt_whenSearchingForNewCharacter() {
+        viewModel.searchForCharacter(characterSearch, limit);
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+
+        searchForCharactersListenerCaptor.getValue().onSearchFailed();
+
+        viewModel.retryFailedCharacterSearch();
+
+        verify(mockManager, times(2)).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+    }
+
+    @Test
+    public void retryShouldRepeatTheLastAttempt_whenSearchingGettingMoreSearchResults() {
+        viewModel.searchForCharacter(characterSearch, limit);
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+
+        searchForCharactersListenerCaptor.getValue().onSearchSucceeded(characterDataWrapper);
+
+        viewModel.getMoreSearchResults();
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(subsequentOffset), searchForCharactersListenerCaptor.capture());
+
+        searchForCharactersListenerCaptor.getValue().onSearchFailed();
+
+        viewModel.retryFailedCharacterSearch();
+
+        verify(mockManager, times(2)).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(subsequentOffset), searchForCharactersListenerCaptor.capture());
+    }
 }
