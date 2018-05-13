@@ -46,6 +46,9 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     @Getter
     private MutableLiveData<Boolean> loadingInProgress = new MutableLiveData<>();
 
+    @Getter
+    private MutableLiveData<Boolean> isInfiniteScrollingActive = new MutableLiveData<>();
+
     private int previousOffset;
     private int previousLimit;
     private CharacterSearch previousCharacterSearch;
@@ -57,6 +60,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     void searchForCharacter(CharacterSearch characterSearch, int limit) {
         searchResults.setValue(new ArrayList<>());
         loadingInProgress.setValue(true);
+        isInfiniteScrollingActive.setValue(true);
         manager.searchForCharacters(characterSearch.getSearchString(), limit, 0, this);
         saveSearchInDatabase(characterSearch);
         previousCharacterSearch = characterSearch;
@@ -67,9 +71,12 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     }
 
     void getMoreSearchResults() {
+        loadingInProgress.setValue(true);
+        isInfiniteScrollingActive.setValue(true);
         manager.searchForCharacters(previousCharacterSearch.getSearchString(), previousLimit, previousOffset + previousLimit, this);
     }
 
+    private static final String TAG = "MainViewModel";
     @Override
     public void onSearchSucceeded(CharacterDataWrapper characterDataWrapper) {
         List<Character> characterList = characterDataWrapper.getCharacterDataContainer().getCharacterList();
@@ -89,12 +96,16 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
         loadingInProgress.setValue(false);
         previousLimit = characterDataWrapper.getCharacterDataContainer().getLimit();
         previousOffset = characterDataWrapper.getCharacterDataContainer().getOffset();
+        if (characterDataWrapper.getCharacterDataContainer().getTotal() <= previousLimit + previousOffset) {
+            isInfiniteScrollingActive.setValue(false);
+        }
     }
 
     @Override
     public void onSearchFailed() {
         mainViewState.setValue(new MainViewState(Snackbar.LENGTH_INDEFINITE, R.string.network_error, R.string.retry));
         loadingInProgress.setValue(false);
+        isInfiniteScrollingActive.setValue(false);
     }
 
     @Getter
