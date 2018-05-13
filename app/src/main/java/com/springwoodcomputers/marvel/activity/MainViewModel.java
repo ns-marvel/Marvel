@@ -21,6 +21,8 @@ import javax.inject.Inject;
 
 import lombok.Getter;
 
+import static com.springwoodcomputers.marvel.utility.Constants.MAX_LIMIT_PERMITTED;
+
 public class MainViewModel extends ViewModel implements MarvelServiceManager.SearchForCharactersListener {
 
     @Inject
@@ -53,6 +55,9 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     @Getter
     private MutableLiveData<Boolean> isInfiniteScrollingActive = new MutableLiveData<>();
 
+    @Getter
+    private MutableLiveData<Boolean> isSearchButtonEnabled = new MutableLiveData<>();
+
     private int previousOffset;
     private int previousLimit;
     private int previousCount;
@@ -65,6 +70,9 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
 
     public void searchForCharacter(CharacterSearch characterSearch, int limit) {
         if (previousCharacterSearch == null || !previousCharacterSearch.equals(characterSearch)) {
+            if (limit > MAX_LIMIT_PERMITTED) {
+                limit = MAX_LIMIT_PERMITTED;
+            }
             searchResults.setValue(new ArrayList<>());
             saveSearchInDatabase(characterSearch);
             performSearch(characterSearch, limit, 0);
@@ -86,8 +94,15 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
     }
 
     public void getMoreSearchResults() {
-        if (!allDataLoaded) {
+        if (!allDataLoaded && (loadingInProgress.getValue() == null || !loadingInProgress.getValue())) {
             performSearch(previousCharacterSearch, previousLimit, previousOffset + previousCount);
+        }
+    }
+
+    public void setNewLimit(int newLimit) {
+        if (newLimit > previousLimit) {
+            previousLimit = newLimit;
+            getMoreSearchResults();
         }
     }
 
@@ -155,6 +170,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
             if (results != null) {
                 savedSearches.setValue((List<CharacterSearch>) results.values);
             }
+            isSearchButtonEnabled.setValue(constraint != null && constraint.toString().trim().length() > 0);
         }
     };
 }

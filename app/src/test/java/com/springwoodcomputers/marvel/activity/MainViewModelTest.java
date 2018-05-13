@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import static com.springwoodcomputers.marvel.utility.Constants.MAX_LIMIT_PERMITTED;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -98,8 +99,11 @@ public class MainViewModelTest {
     private Character character;
 
     private int limit = 10;
+    private int biggerLimit = 20;
     private int zeroOffset = 0;
     private int subsequentOffset = 10;
+    private int maxLimit = MAX_LIMIT_PERMITTED;
+    private int tooBigLimit = MAX_LIMIT_PERMITTED + 1;
 
     @Test
     public void newSearch_clearsExistingSearchResults() {
@@ -109,6 +113,13 @@ public class MainViewModelTest {
 
         verify(mockSearchResultsObserver).onChanged(characterListArgumentCaptor.capture());
         assertEquals(0, characterListArgumentCaptor.getValue().size());
+    }
+
+    @Test
+    public void searchForCharacter_maxLimitIs100() {
+        viewModel.searchForCharacter(characterSearch, tooBigLimit);
+
+        verify(mockManager).searchForCharacters(characterSearch.getSearchString(), maxLimit, zeroOffset, viewModel);
     }
 
     @Test
@@ -331,5 +342,17 @@ public class MainViewModelTest {
         viewModel.onCharacterClicked(character);
 
         verify(mockCharacterObserver).onChanged(character);
+    }
+
+    @Test
+    public void settingNewLimitGreaterThanPrevious_shouldLoadMoreData() {
+        viewModel.searchForCharacter(characterSearch, limit);
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+
+        searchForCharactersListenerCaptor.getValue().onSearchSucceeded(characterDataWrapper);
+
+        viewModel.setNewLimit(biggerLimit);
+
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(biggerLimit), eq(subsequentOffset), searchForCharactersListenerCaptor.capture());
     }
 }
