@@ -1,6 +1,6 @@
 package com.springwoodcomputers.marvel.dagger;
 
-import com.springwoodcomputers.marvel.main.ChildFragment;
+import com.springwoodcomputers.marvel.child.ChildFragment;
 import com.springwoodcomputers.marvel.main.MainFragment;
 
 import dagger.Module;

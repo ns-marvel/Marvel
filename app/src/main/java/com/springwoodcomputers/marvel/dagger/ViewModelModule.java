@@ -2,7 +2,7 @@ package com.springwoodcomputers.marvel.dagger;
 
 import android.arch.lifecycle.ViewModel;
 
-import com.springwoodcomputers.marvel.main.MainViewModel;
+import com.springwoodcomputers.marvel.activity.MainViewModel;
 
 import dagger.Binds;
 import dagger.Module;

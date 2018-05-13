@@ -11,4 +11,8 @@ public class Thumbnail {
     public String getImageUrl() {
         return path + "." + extension;
     }
+
+    public String getBigImageUrl() {
+        return path + "/landscape_xlarge." + extension;
+    }
 }

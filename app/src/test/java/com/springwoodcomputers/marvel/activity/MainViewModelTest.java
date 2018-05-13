@@ -1,4 +1,4 @@
-package com.springwoodcomputers.marvel.main;
+package com.springwoodcomputers.marvel.activity;
 
 import android.arch.core.executor.testing.InstantTaskExecutorRule;
 import android.arch.lifecycle.Observer;
@@ -8,6 +8,7 @@ import com.springwoodcomputers.marvel.R;
 import com.springwoodcomputers.marvel.api.MarvelServiceManager;
 import com.springwoodcomputers.marvel.database.dao.SearchDao;
 import com.springwoodcomputers.marvel.database.entity.CharacterSearch;
+import com.springwoodcomputers.marvel.main.MainViewState;
 import com.springwoodcomputers.marvel.pojo.Character;
 import com.springwoodcomputers.marvel.pojo.CharacterDataContainer;
 import com.springwoodcomputers.marvel.pojo.CharacterDataWrapper;
@@ -64,6 +65,9 @@ public class MainViewModelTest {
     @Mock
     private Observer<Boolean> mockInfiniteScrollingActiveObserver;
 
+    @Mock
+    private Observer<Character> mockCharacterObserver;
+
     @Captor
     private ArgumentCaptor<MarvelServiceManager.SearchForCharactersListener> searchForCharactersListenerCaptor;
 
@@ -90,6 +94,8 @@ public class MainViewModelTest {
     private List<Character> emptyCharacterList = Collections.emptyList();
     private CharacterDataContainer emptyCharacterDataContainer = new CharacterDataContainer(0, 10, 0, 10, emptyCharacterList);
     private CharacterDataWrapper emptyCharacterDataWrapper = new CharacterDataWrapper(attributionText, emptyCharacterDataContainer);
+
+    private Character character;
 
     private int limit = 10;
     private int zeroOffset = 0;
@@ -316,5 +322,14 @@ public class MainViewModelTest {
         viewModel.retryFailedCharacterSearch();
 
         verify(mockManager, times(2)).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(subsequentOffset), searchForCharactersListenerCaptor.capture());
+    }
+
+    @Test
+    public void whenCharacterClicked_viewModelEmitsCharacterObject() {
+        viewModel.getSelectedCharacter().observeForever(mockCharacterObserver);
+
+        viewModel.onCharacterClicked(character);
+
+        verify(mockCharacterObserver).onChanged(character);
     }
 }
