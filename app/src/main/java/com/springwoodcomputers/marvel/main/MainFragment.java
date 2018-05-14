@@ -165,7 +165,9 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     }
 
     private void enableSearchButton(Boolean enabled) {
-        searchButton.setEnabled(enabled != null && enabled);
+        boolean isEnabled = enabled != null && enabled;
+        searchButton.setEnabled(isEnabled);
+        searchBar.setCompletionHint(isEnabled ? null : getResources().getString(R.string.search_hint));
     }
 
     private void updateSearchResults(List<Character> characters) {
