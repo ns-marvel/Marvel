@@ -18,6 +18,7 @@
             android:padding="32dp"
             android:src="@drawable/marvel_comics_logo"
             android:visibility="gone"
+            android:layout_marginTop="72dp"
             app:layout_constraintBottom_toBottomOf="@+id/main_container"
             app:layout_constraintEnd_toEndOf="@+id/main_container"
             app:layout_constraintStart_toStartOf="@+id/main_container"
