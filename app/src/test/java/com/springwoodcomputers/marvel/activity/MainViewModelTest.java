@@ -211,6 +211,9 @@ public class MainViewModelTest {
     public void searchingForMoreCharacters_setsLoadingInProgress() {
         viewModel.getLoadingInProgress().observeForever(mockLoadingInProgressObserver);
         viewModel.searchForCharacter(characterSearch, limit);
+        verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+
+        searchForCharactersListenerCaptor.getValue().onSearchSucceeded(characterDataWrapper);
 
         viewModel.getMoreSearchResults();
 
@@ -244,6 +247,8 @@ public class MainViewModelTest {
 
         viewModel.searchForCharacter(characterSearch, limit);
         verify(mockManager).searchForCharacters(eq(characterSearch.getSearchString()), eq(limit), eq(zeroOffset), searchForCharactersListenerCaptor.capture());
+
+        searchForCharactersListenerCaptor.getValue().onSearchSucceeded(characterDataWrapper);
 
         viewModel.getMoreSearchResults();
 
