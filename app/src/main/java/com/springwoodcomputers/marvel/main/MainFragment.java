@@ -178,7 +178,7 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
             showErrorSnackBar(mainViewState);
         }
         if (mainViewState.isNoResultsFound()) {
-            Toast.makeText(getContext(), "Not found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), searchBar.getText().toString().trim() + " not found", Toast.LENGTH_SHORT).show();
         }
     }
 
