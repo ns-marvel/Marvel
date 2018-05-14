@@ -87,27 +87,28 @@ public class ChildFragment extends DaggerFragment {
     }
 
     private void processSelectedCharacter(Character character) {
-        progressBar.setVisibility(View.VISIBLE);
-        Picasso.get().load(character.getThumbnail().getBigImageUrl()).into(bigImage, new Callback() {
-            @Override
-            public void onSuccess() {
-                progressBar.setVisibility(GONE);
-            }
+        if (character != null) {
+            progressBar.setVisibility(View.VISIBLE);
+            Picasso.get().load(character.getThumbnail().getBigImageUrl()).into(bigImage, new Callback() {
+                @Override
+                public void onSuccess() {
+                    progressBar.setVisibility(GONE);
+                }
 
-            @Override
-            public void onError(Exception e) {
-                progressBar.setVisibility(GONE);
-            }
-        });
-        characterName.setText(character.getName());
-        characterDescription.setText(character.getDescription());
+                @Override
+                public void onError(Exception e) {
+                    progressBar.setVisibility(GONE);
+                }
+            });
+            characterName.setText(character.getName());
+            characterDescription.setText(character.getDescription());
 
-        Resources resources = getResources();
-        characterComics.setText(resources.getQuantityString(R.plurals.comicAchievements, character.getComicListCount(), character.getComicListCount()));
-        characterStories.setText(resources.getQuantityString(R.plurals.storyAchievements, character.getStoryListCount(), character.getStoryListCount()));
-        characterEvents.setText(resources.getQuantityString(R.plurals.eventAchievements, character.getEventListCount(), character.getEventListCount()));
-        characterSeries.setText(resources.getString(R.string.series_achievements, character.getSeriesListCount()));
-
+            Resources resources = getResources();
+            characterComics.setText(resources.getQuantityString(R.plurals.comicAchievements, character.getComicListCount(), character.getComicListCount()));
+            characterStories.setText(resources.getQuantityString(R.plurals.storyAchievements, character.getStoryListCount(), character.getStoryListCount()));
+            characterEvents.setText(resources.getQuantityString(R.plurals.eventAchievements, character.getEventListCount(), character.getEventListCount()));
+            characterSeries.setText(resources.getString(R.string.series_achievements, character.getSeriesListCount()));
+        }
     }
 
     @Override

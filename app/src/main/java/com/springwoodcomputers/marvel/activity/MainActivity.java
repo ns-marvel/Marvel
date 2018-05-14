@@ -96,19 +96,21 @@ public class MainActivity extends DaggerAppCompatActivity {
         }
     }
 
-    private void launchChildFragment(@SuppressWarnings("unused") Character character) {
-        if (isSinglePane) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.main_container, ChildFragment.newInstance(), CHILD_FRAGMENT)
-                    .addToBackStack(null)
-                    .commit();
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
+    private void launchChildFragment(Character character) {
+        if (character != null) {
+            if (isSinglePane) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.main_container, ChildFragment.newInstance(), CHILD_FRAGMENT)
+                        .addToBackStack(null)
+                        .commit();
+                ActionBar actionBar = getSupportActionBar();
+                if (actionBar != null) {
+                    actionBar.setDisplayHomeAsUpEnabled(true);
+                }
+            } else {
+                placeholderImage.setVisibility(GONE);
             }
-        } else {
-            placeholderImage.setVisibility(GONE);
         }
     }
 
@@ -124,6 +126,7 @@ public class MainActivity extends DaggerAppCompatActivity {
     @Override
     public void onBackPressed() {
         if (isSinglePane) {
+            viewModel.onCharacterClicked(null);
             ActionBar actionBar = getSupportActionBar();
             if (actionBar != null) {
                 actionBar.setDisplayHomeAsUpEnabled(false);
