@@ -17,6 +17,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/character_image"
+        app:layout_constraintEnd_toEndOf="@+id/character_image"
+        app:layout_constraintStart_toStartOf="@+id/character_image"
+        app:layout_constraintTop_toTopOf="@+id/character_image" />
+
     <TextView
         android:id="@+id/character_name"
         android:layout_width="100dp"
