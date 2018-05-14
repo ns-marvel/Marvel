@@ -29,6 +29,7 @@ import static android.view.View.VISIBLE;
 public class MainActivity extends DaggerAppCompatActivity {
 
     public static final String CHILD_FRAGMENT = "child_fragment";
+
     @Inject
     ViewModelFactory viewModelFactory;
 
@@ -50,7 +51,6 @@ public class MainActivity extends DaggerAppCompatActivity {
 
     private MainViewModel viewModel;
     private boolean isSinglePane;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

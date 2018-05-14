@@ -10,7 +10,7 @@ public class MarvelServiceManager {
     MarvelService service;
 
     @Inject
-    public MarvelServiceManager() {
+    MarvelServiceManager() {
     }
 
     public void searchForCharacters(String nameBeginsWith, int limit, int offset, SearchForCharactersListener listener) {

@@ -117,4 +117,3 @@ public class ChildFragment extends DaggerFragment {
         unbinder.unbind();
     }
 }
-
