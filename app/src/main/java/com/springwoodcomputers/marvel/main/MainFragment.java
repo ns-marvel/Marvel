@@ -194,7 +194,7 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
 
     @OnClick(R.id.search_button)
     void onSearchButtonClicked() {
-        viewModel.searchForCharacter(new CharacterSearch(searchBar.getText().toString()), limit);
+        viewModel.searchForCharacter(new CharacterSearch(searchBar.getText().toString().trim()), limit);
         clearSearchBar();
     }
 

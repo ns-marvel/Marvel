@@ -158,7 +158,7 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
                 filterResults.values = new ArrayList<CharacterSearch>();
                 filterResults.count = 0;
             } else {
-                filterResults.values = searchDao.getMatchingPreviousSearches(charSequence.toString());
+                filterResults.values = searchDao.getMatchingPreviousSearches(charSequence.toString().trim());
                 filterResults.count = ((List) filterResults.values).size();
             }
             return filterResults;
@@ -166,11 +166,11 @@ public class MainViewModel extends ViewModel implements MarvelServiceManager.Sea
 
         @SuppressWarnings("unchecked")
         @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
+        protected void publishResults(CharSequence charSequence, FilterResults results) {
             if (results != null) {
                 savedSearches.setValue((List<CharacterSearch>) results.values);
             }
-            isSearchButtonEnabled.setValue(constraint != null && constraint.toString().trim().length() > 0);
+            isSearchButtonEnabled.setValue(charSequence != null && charSequence.toString().trim().length() > 0);
         }
     };
 }
