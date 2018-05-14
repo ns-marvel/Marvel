@@ -116,22 +116,24 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
 
     private void setUpRecyclerView() {
         searchResults.post(() -> {
-            int numberOfColumns = calculateNumberOfColumns();
-            int numberOfRows = calculateNumberOfRows();
-            int threshold = numberOfColumns * numberOfRows + numberOfColumns + 1;
-            limit = numberOfColumns * numberOfRows * 2;
-            GridLayoutManager layoutManager = new GridLayoutManager(getContext(), numberOfColumns);
-            searchResults.setLayoutManager(layoutManager);
-            infiniteScrollListener = new InfiniteScrollListener(layoutManager, threshold, this);
-            searchResults.setAdapter(searchResultsAdapter);
-            searchResults.addOnScrollListener(infiniteScrollListener);
+            if (searchResults != null) {
+                int numberOfColumns = calculateNumberOfColumns();
+                int numberOfRows = calculateNumberOfRows();
+                int threshold = numberOfColumns * numberOfRows + numberOfColumns + 1;
+                limit = numberOfColumns * numberOfRows * 2;
+                GridLayoutManager layoutManager = new GridLayoutManager(getContext(), numberOfColumns);
+                searchResults.setLayoutManager(layoutManager);
+                infiniteScrollListener = new InfiniteScrollListener(layoutManager, threshold, this);
+                searchResults.setAdapter(searchResultsAdapter);
+                searchResults.addOnScrollListener(infiniteScrollListener);
 
-            if (viewModel.getSearchResults().getValue() != null) {
-                viewModel.setNewLimit(limit);
-            }
+                if (viewModel.getSearchResults().getValue() != null) {
+                    viewModel.setNewLimit(limit);
+                }
 
-            if (recyclerViewPosition > 0) {
-                searchResults.scrollToPosition(recyclerViewPosition);
+                if (recyclerViewPosition > 0) {
+                    searchResults.scrollToPosition(recyclerViewPosition);
+                }
             }
         });
     }
