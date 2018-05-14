@@ -5,4 +5,5 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="pale_grey">#e3e6e5</color>
+    <color name="disabled_button">#c66d8e</color>
 </resources>

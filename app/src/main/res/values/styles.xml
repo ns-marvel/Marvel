@@ -8,10 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="BaseButtonStyle" parent="Widget.AppCompat.Button.Colored">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:minHeight">@dimen/touch_height</item>
-        <item name="android:minWidth">@dimen/touch_height</item>
+    <style name="BaseButtonStyle" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorButtonNormal">@color/disabled_button</item>
     </style>
 
 </resources>
