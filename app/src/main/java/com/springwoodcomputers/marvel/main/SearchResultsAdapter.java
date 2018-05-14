@@ -73,7 +73,7 @@ class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.Sea
         SearchResultsViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            itemView.setOnClickListener((v) -> listener.onCharacterClicked(characterList.get(getAdapterPosition())));
+            itemView.setOnClickListener((v) -> listener.onCharacterClicked(characterList.get(getAdapterPosition()), getAdapterPosition()));
         }
 
         void bind(Character character) {
@@ -97,6 +97,6 @@ class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.Sea
 
     interface OnCharacterClickedListener {
 
-        void onCharacterClicked(Character character);
+        void onCharacterClicked(Character character, int position);
     }
 }

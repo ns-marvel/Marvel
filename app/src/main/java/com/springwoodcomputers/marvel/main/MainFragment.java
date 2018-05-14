@@ -68,6 +68,7 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     private SearchResultsAdapter searchResultsAdapter;
     private int limit;
     private InfiniteScrollListener infiniteScrollListener;
+    private int recyclerViewPosition;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -126,8 +127,11 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
             searchResults.addOnScrollListener(infiniteScrollListener);
 
             if (viewModel.getSearchResults().getValue() != null) {
-                // must have rotated
                 viewModel.setNewLimit(limit);
+            }
+
+            if (recyclerViewPosition > 0) {
+                searchResults.scrollToPosition(recyclerViewPosition);
             }
         });
     }
@@ -205,7 +209,8 @@ public class MainFragment extends DaggerFragment implements OnCharacterClickedLi
     }
 
     @Override
-    public void onCharacterClicked(Character character) {
+    public void onCharacterClicked(Character character, int adapterPosition) {
+        recyclerViewPosition = adapterPosition;
         viewModel.onCharacterClicked(character);
     }
 
