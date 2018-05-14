@@ -92,12 +92,12 @@ public class ChildFragment extends DaggerFragment {
             Picasso.get().load(character.getThumbnail().getBigImageUrl()).into(bigImage, new Callback() {
                 @Override
                 public void onSuccess() {
-                    progressBar.setVisibility(GONE);
+                    if (progressBar != null) progressBar.setVisibility(GONE);
                 }
 
                 @Override
                 public void onError(Exception e) {
-                    progressBar.setVisibility(GONE);
+                    if (progressBar != null) progressBar.setVisibility(GONE);
                 }
             });
             characterName.setText(character.getName());
