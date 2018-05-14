@@ -3,6 +3,7 @@ package com.springwoodcomputers.marvel.activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
@@ -28,6 +29,7 @@ import static android.view.View.VISIBLE;
 
 public class MainActivity extends DaggerAppCompatActivity {
 
+    public static final String MAIN_FRAGMENT = "main_fragment";
     public static final String CHILD_FRAGMENT = "child_fragment";
 
     @Inject
@@ -70,21 +72,28 @@ public class MainActivity extends DaggerAppCompatActivity {
 
         addMainFragment();
         addEmptyChildFragmentIfRequired();
+
+        placeholderImage.setVisibility(VISIBLE);
     }
 
     private void addMainFragment() {
-        getSupportFragmentManager()
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment childFragment = fragmentManager.findFragmentByTag(CHILD_FRAGMENT);
+        if (childFragment != null) {
+            fragmentManager.beginTransaction().remove(childFragment).commit();
+            fragmentManager.popBackStack();
+        }
+        fragmentManager
                 .beginTransaction()
                 .replace(R.id.main_container, MainFragment.newInstance())
                 .commitNow();
     }
 
     private void addEmptyChildFragmentIfRequired() {
-        placeholderImage.setVisibility(VISIBLE);
         if (!isSinglePane) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.child_container, ChildFragment.newInstance(), CHILD_FRAGMENT)
+                    .replace(R.id.child_container, ChildFragment.newInstance())
                     .commitNow();
         }
     }
@@ -102,7 +111,7 @@ public class MainActivity extends DaggerAppCompatActivity {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.main_container, ChildFragment.newInstance(), CHILD_FRAGMENT)
-                        .addToBackStack(null)
+                        .addToBackStack(MAIN_FRAGMENT)
                         .commit();
                 ActionBar actionBar = getSupportActionBar();
                 if (actionBar != null) {
@@ -125,20 +134,17 @@ public class MainActivity extends DaggerAppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (fragmentManager.getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack(MAIN_FRAGMENT, 0);
+        }
         if (isSinglePane) {
             viewModel.onCharacterClicked(null);
             ActionBar actionBar = getSupportActionBar();
             if (actionBar != null) {
                 actionBar.setDisplayHomeAsUpEnabled(false);
             }
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            if (fragmentManager.getBackStackEntryCount() > 0) {
-                getSupportFragmentManager().popBackStack();
-            } else {
-                super.onBackPressed();
-            }
-        } else {
-            super.onBackPressed();
         }
+        super.onBackPressed();
     }
 }
